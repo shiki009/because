@@ -1,4 +1,4 @@
-import { groq } from '@ai-sdk/groq';
+import { createGroq } from '@ai-sdk/groq';
 import { generateText } from 'ai';
 
 const ALLOWED_TOPICS = ['Learning', 'Ideas', 'Reference', 'Work', 'Inspiration', 'Personal', 'Other'];
@@ -18,16 +18,18 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'GROQ_API_KEY not configured' });
+    return res.status(500).json({ error: 'GROQ_API_KEY not configured. Add it in Vercel → Settings → Environment Variables.' });
   }
 
   try {
-    const { content = '', because = '' } = req.body || {};
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+    const { content = '', because = '' } = body;
     const text = `${content} ${because}`.trim();
     if (!text) {
       return res.status(400).json({ error: 'content or because required' });
     }
 
+    const groq = createGroq({ apiKey });
     const { text: response } = await generateText({
       model: groq('llama-3.3-70b-versatile'),
       prompt: `Classify this bookmark into 1-3 topics. Respond with ONLY a JSON array of topic names, nothing else.

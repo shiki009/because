@@ -360,6 +360,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await saveItems(items);
         showList();
       } else {
+        const err = await res.json().catch(() => ({}));
+        showToast(err.error || `Segment failed (${res.status})`, 'error');
         item.topics = ['Other'];
         await saveItems(items);
         showList();
