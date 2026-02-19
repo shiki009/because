@@ -309,11 +309,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   const importBtn = document.getElementById('import-btn');
   const importInput = document.getElementById('import-input');
 
+  const listLoader = document.getElementById('list-loader');
+  const listContent = document.getElementById('list-content');
+
+  const hideLoader = () => {
+    listLoader?.setAttribute('hidden', '');
+    listContent?.removeAttribute('hidden');
+  };
+
+  listLoader?.removeAttribute('hidden');
+  listContent?.setAttribute('hidden', '');
+
   let items = [];
   try {
     items = await loadItems();
   } catch {
     showToast('Could not load data. Using temporary storage.', 'error');
+  } finally {
+    hideLoader();
   }
 
   let visibleCount = PAGE_SIZE;
@@ -438,6 +451,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   exportBtn?.addEventListener('click', () => exportData(items));
   importBtn?.addEventListener('click', () => importInput?.click());
   importInput?.addEventListener('change', () => importData(items, importInput, showList));
+
+  document.getElementById('theme-toggle')?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('because-theme', next);
+  });
 
   contentInput.focus();
 });

@@ -51,11 +51,12 @@ export function renderRadarChart(container, data) {
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('viewBox', `0 0 ${size} ${size}`);
-  svg.setAttribute('width', '100%');
-  svg.setAttribute('height', 'auto');
+  svg.setAttribute('width', String(size));
+  svg.setAttribute('height', String(size));
   svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   svg.style.margin = '0 auto';
   svg.style.display = 'block';
+  svg.style.maxWidth = '100%';
 
   // Grid circles
   for (let r = 1; r <= 4; r++) {
