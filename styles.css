@@ -202,27 +202,9 @@ body {
 
 #empty-state {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 2rem 1rem;
   color: var(--text-muted);
-}
-
-.empty-icon {
-  font-family: var(--font-display);
-  font-size: 4rem;
-  color: var(--border);
-  margin-bottom: 1rem;
-  opacity: 0.5;
-}
-
-#empty-state em {
-  color: var(--accent);
-  font-style: normal;
-}
-
-.empty-hint {
   font-size: 0.9rem;
-  margin-top: 0.5rem;
-  opacity: 0.8;
 }
 
 #list {
