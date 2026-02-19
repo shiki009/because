@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Because — Remember why</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <h1>Because</h1>
+      <p class="tagline">The only bookmark that asks you why.</p>
+    </header>
+
+    <main id="main" role="main">
+      <section class="capture">
+        <div class="input-group">
+          <input 
+            type="text" 
+            id="content" 
+            placeholder="Link, quote, idea, or anything worth remembering..."
+            autocomplete="off"
+            aria-label="What to save"
+          >
+          <input 
+            type="text" 
+            id="because" 
+            placeholder="Because..."
+            autocomplete="off"
+            aria-label="Why it matters"
+          >
+          <button id="add" type="button" aria-label="Save">
+            <span class="btn-text">Save</span>
+            <span class="btn-icon">→</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="search-bar" aria-label="Search">
+        <input 
+          type="search"
+          id="search"
+          placeholder="Search your whys..."
+          autocomplete="off"
+          aria-label="Search your saved items"
+        >
+      </section>
+
+      <section class="timeline">
+        <div id="empty-state">
+          <div class="empty-icon">?</div>
+          <p>Nothing yet. Save something with <em>why</em> it matters.</p>
+          <p class="empty-hint">Links, quotes, ideas — add anything. The magic is in the because.</p>
+        </div>
+        <ul id="list"></ul>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-top">
+        <p class="footer-privacy">Your whys stay on this device. No account. No tracking.</p>
+        <p class="footer-storage">Data is stored locally in your browser (IndexedDB). Nothing is sent to any server.</p>
+        <div class="footer-buttons">
+          <button id="export" type="button">Download backup</button>
+          <button id="import-btn" type="button">Restore from backup</button>
+          <input type="file" id="import-input" accept=".json" hidden>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
