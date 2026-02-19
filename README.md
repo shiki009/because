@@ -21,6 +21,12 @@ python3 -m http.server 8765
 - **Privacy** — Data stays in your browser. No account. No tracking.
 - **Accessible** — Skip link, ARIA labels, keyboard navigation
 
+## AI segmentation (optional)
+
+When deployed on Vercel with `GROQ_API_KEY` set, new bookmarks get AI-assigned topics (Learning, Ideas, Reference, etc.). Chart uses these. Without the API key or offline, chart falls back to keyword matching.
+
+**Local testing:** Replace `your_groq_api_key_here` in `.env.local` with your key from [console.groq.com](https://console.groq.com), then run `npm run dev`.
+
 ## Data
 
 - Stored in IndexedDB (larger capacity, async)

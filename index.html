@@ -49,13 +49,34 @@
           autocomplete="off"
           aria-label="Search your saved items"
         >
+        <button id="chart-btn" type="button" title="View topic chart" aria-label="View topic chart">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.41 1.41M16.95 16.95l1.41 1.41M5.64 18.36l1.41-1.41M16.95 7.05l1.41-1.41"/>
+            <path d="M12 6l1.5 4.5 4.5 1.5-3 4-3-4 4.5-1.5L12 6z"/>
+          </svg>
+        </button>
       </section>
+
+      <div id="chart-overlay" class="chart-overlay" role="dialog" aria-modal="true" aria-label="Topic chart">
+        <div class="chart-modal">
+          <div class="chart-header">
+            <h2>Your topics</h2>
+            <button id="chart-close" type="button" aria-label="Close">×</button>
+          </div>
+          <div id="chart-container" class="chart-container"></div>
+          <p class="chart-hint">Topics from AI (Groq) when saved. Falls back to keyword matching for older items or when offline.</p>
+        </div>
+      </div>
 
       <section class="timeline">
         <div id="empty-state">
           <p>Nothing yet. Add something above.</p>
         </div>
         <ul id="list"></ul>
+        <div id="load-more-wrap" class="load-more-wrap" hidden>
+          <button id="load-more" type="button">Load more</button>
+        </div>
       </section>
     </main>
 
