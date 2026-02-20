@@ -182,8 +182,9 @@ body.because-extension-loaded .extension-hint {
   display: none;
 }
 
-.extension-hint a {
-  color: var(--accent);
+.extension-hint a:link,
+.extension-hint a:visited {
+  color: #d4a853;
   text-decoration: none;
 }
 
