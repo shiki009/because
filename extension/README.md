@@ -2,6 +2,10 @@
 
 Chrome extension that adds a tab picker button next to the content input. Lets you choose from your open browser tabs when saving a bookmark.
 
+## Share with users
+
+`extension.zip` is built from this folder. To regenerate after changes: `npm run extension:zip`. Users download it from the app's install page and load it in Chrome Developer mode.
+
 ## Install (unpacked)
 
 1. Open Chrome → Extensions → Manage extensions

@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev"
+    "dev": "vercel dev",
+    "extension:zip": "cd extension && zip -r ../extension.zip . -x '*.DS_Store'"
   },
   "dependencies": {
     "@ai-sdk/groq": "^3.0.22",

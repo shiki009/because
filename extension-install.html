@@ -15,10 +15,13 @@
     </header>
 
     <main role="main" style="max-width: 560px;">
+      <p class="download-extension">
+        <a href="extension.zip" download class="btn-download">Download extension (zip)</a>
+      </p>
       <ol class="install-steps">
         <li>
           <strong>Get the extension</strong>
-          <p>Download the Because project (e.g. from GitHub: Code → Download ZIP). The extension is in the <code>extension</code> folder.</p>
+          <p>Click the button above to download <code>extension.zip</code>. Unzip it somewhere — you'll get a folder with the extension files.</p>
         </li>
         <li>
           <strong>Open Chrome Extensions</strong>
@@ -30,11 +33,11 @@
         </li>
         <li>
           <strong>Load unpacked</strong>
-          <p>Click <strong>Load unpacked</strong>, then select the <code>extension</code> folder from the extracted project.</p>
+          <p>Click <strong>Load unpacked</strong>, then select the folder you extracted from the zip.</p>
         </li>
         <li>
           <strong>Use on your deployed app?</strong>
-          <p>By default the extension runs on <code>localhost</code> and <code>file://</code>. To use it on your deployed Because URL, edit <code>extension/manifest.json</code> and add your domain to the <code>matches</code> array. Example:</p>
+          <p>By default the extension runs on <code>localhost</code> and <code>file://</code>. To use it on your deployed Because URL, edit <code>manifest.json</code> in the extracted folder and add your domain to the <code>matches</code> array. Example:</p>
           <pre>// In manifest.json, content_scripts.matches:
 "https://your-app.vercel.app/*"</pre>
         </li>
@@ -44,6 +47,9 @@
     </main>
   </div>
   <style>
+    .download-extension { margin-bottom: 2rem; }
+    .btn-download { display: inline-block; padding: 0.75rem 1.25rem; background: var(--accent); color: var(--bg); text-decoration: none; border-radius: var(--radius); font-weight: 600; transition: background 0.2s; }
+    .btn-download:hover { background: var(--accent-dim); }
     .back-link { color: var(--accent); text-decoration: none; font-size: 0.95rem; margin-bottom: 1rem; display: inline-block; }
     .back-link:hover { text-decoration: underline; }
     .install-steps { list-style: decimal; padding-left: 1.5rem; line-height: 1.7; }
