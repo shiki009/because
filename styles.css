@@ -172,6 +172,25 @@ body {
   opacity: 0.8;
 }
 
+.extension-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: -0.25rem;
+}
+
+body.because-extension-loaded .extension-hint {
+  display: none;
+}
+
+.extension-hint a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.extension-hint a:hover {
+  text-decoration: underline;
+}
+
 /* Search */
 .search-bar {
   margin-bottom: 2rem;

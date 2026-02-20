@@ -1,0 +1,104 @@
+/* Because extension — tab picker styles, respects app theme */
+.because-tab-picker-wrapper {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.because-tab-picker-wrapper > input {
+  flex: 1;
+  min-width: 0;
+}
+
+.because-tab-picker-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  padding: 0;
+  background: var(--surface, #161616);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: var(--radius, 12px);
+  color: var(--text-muted, #8a8a8a);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.because-tab-picker-btn:hover {
+  color: var(--accent, #d4a853);
+  border-color: var(--accent, #d4a853);
+  background: var(--surface, #161616);
+}
+
+.because-tab-picker-wrapper {
+  position: relative;
+}
+
+.because-tab-picker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 0.5rem;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--surface, #161616);
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: var(--radius, 12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+[data-theme="light"] .because-tab-picker-dropdown {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.because-tab-picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--border, #2a2a2a);
+  color: var(--text, #e8e8e8);
+  font-family: inherit;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.because-tab-picker-item:last-child {
+  border-bottom: none;
+}
+
+.because-tab-picker-item:hover {
+  background: rgba(212, 168, 83, 0.12);
+}
+
+.because-tab-picker-title {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.because-tab-picker-url {
+  font-size: 0.75rem;
+  color: var(--text-muted, #8a8a8a);
+  margin-top: 0.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.because-tab-picker-empty {
+  padding: 1rem;
+  color: var(--text-muted, #8a8a8a);
+  font-size: 0.9rem;
+}

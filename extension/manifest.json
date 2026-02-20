@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Because — Pick from tabs",
+  "description": "Pick from your open browser tabs when saving to Because.",
+  "version": "1.0.0",
+  "permissions": ["tabs", "activeTab"],
+  "host_permissions": ["<all_urls>", "http://localhost/*", "http://127.0.0.1/*", "https://*.vercel.app/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost/*",
+        "http://127.0.0.1/*",
+        "file:///*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_end"
+    }
+  ]
+}
