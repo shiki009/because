@@ -172,6 +172,16 @@ body {
   opacity: 0.8;
 }
 
+.because-hint {
+  font-size: 0.82rem;
+  color: var(--accent);
+  margin-top: -0.25rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(212, 168, 83, 0.08);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 6px 6px 0;
+}
+
 .extension-hint {
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -343,6 +353,33 @@ body.because-extension-loaded .extension-hint {
   background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
+}
+
+.toast-undo {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.toast-undo-btn {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.toast-undo-btn:hover {
+  background: var(--accent-dim);
 }
 
 /* Timeline */

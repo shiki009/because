@@ -40,7 +40,7 @@ export function computeRadarData(items) {
   };
 }
 
-export function renderRadarChart(container, data) {
+export function renderRadarChart(container, data, onTopicSelect = null) {
   container.innerHTML = '';
 
   const size = 320;
@@ -91,9 +91,16 @@ export function renderRadarChart(container, data) {
     text.setAttribute('y', center + (radius + 36) * Math.sin(angle));
     text.setAttribute('text-anchor', 'middle');
     text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('fill', '#8a8a8a');
+    text.setAttribute('fill', data.counts[i] > 0 ? '#d4a853' : '#8a8a8a');
     text.setAttribute('font-size', '11');
     text.textContent = `${label} (${data.counts[i]})`;
+    if (onTopicSelect && data.counts[i] > 0) {
+      text.style.cursor = 'pointer';
+      text.style.textDecoration = 'underline';
+      text.addEventListener('click', () => onTopicSelect(label));
+      text.addEventListener('mouseenter', () => text.setAttribute('fill', '#e8c06a'));
+      text.addEventListener('mouseleave', () => text.setAttribute('fill', '#d4a853'));
+    }
     svg.appendChild(text);
 
     const value = (data.values[i] / 100) * radius;

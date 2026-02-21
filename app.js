@@ -282,17 +282,58 @@ async function editItem(item, items, onRefresh) {
   contentInput.focus();
 }
 
-async function deleteItem(id, items, onRefresh) {
-  const next = items.filter(i => i.id !== id);
-  try {
-    await saveItems(next);
-  } catch (e) {
-    showToast(e.message || 'Failed to save', 'error');
-    return;
-  }
-  items.length = 0;
-  items.push(...next);
-  (onRefresh || (() => renderList(items, document.getElementById('search').value)))();
+function deleteItem(id, items, onRefresh) {
+  const idx = items.findIndex(i => i.id === id);
+  if (idx === -1) return;
+  const [removed] = items.splice(idx, 1);
+  (onRefresh || (() => {}))();
+
+  let undone = false;
+  const timer = setTimeout(async () => {
+    if (undone) return;
+    try { await saveItems(items); } catch { /* silent */ }
+  }, 5000);
+
+  showUndoToast('Deleted', async () => {
+    undone = true;
+    clearTimeout(timer);
+    items.splice(idx, 0, removed);
+    try { await saveItems(items); } catch { /* silent */ }
+    (onRefresh || (() => {}))();
+  });
+}
+
+function showUndoToast(message, onUndo) {
+  const existing = document.getElementById('toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toast';
+  toast.className = 'toast toast-undo';
+  toast.setAttribute('role', 'alert');
+
+  const msg = document.createElement('span');
+  msg.textContent = message;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'toast-undo-btn';
+  btn.textContent = 'Undo';
+  btn.addEventListener('click', () => {
+    onUndo();
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  });
+
+  toast.appendChild(msg);
+  toast.appendChild(btn);
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  }, 5000);
 }
 
 function exportData(items) {
@@ -490,6 +531,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   startRotating();
 
+  // Because field quality nudge
+  const VAGUE = ['interesting', 'cool', 'good', 'nice', 'useful', 'great', 'awesome', 'ok', 'okay', 'fine', 'neat'];
+  const becauseHint = document.getElementById('because-hint');
+  becauseInput.addEventListener('input', () => {
+    const val = becauseInput.value.trim();
+    if (!val || !becauseHint) return;
+    const words = val.toLowerCase().split(/\s+/);
+    const isVague = words.length <= 2 && VAGUE.some(w => words.includes(w));
+    const isTooShort = val.length < 15;
+    if (isVague) {
+      becauseHint.textContent = 'Try to be more specific — why does this matter to you?';
+      becauseHint.hidden = false;
+    } else if (isTooShort) {
+      becauseHint.textContent = 'A bit more detail will help you remember why later.';
+      becauseHint.hidden = false;
+    } else {
+      becauseHint.hidden = true;
+    }
+  });
+  becauseInput.addEventListener('blur', () => {
+    if (becauseHint) becauseHint.hidden = true;
+  });
+
   addBtn.addEventListener('click', addNew);
 
   contentInput.addEventListener('keydown', (e) => {
@@ -528,7 +592,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
     const data = computeRadarData(items);
-    renderRadarChart(chartContainer, data);
+    renderRadarChart(chartContainer, data, (topic) => {
+      closeChart();
+      onTopicClick(topic);
+    });
     chartOverlay?.classList.add('is-open');
     document.body.style.overflow = 'hidden';
   }
@@ -551,6 +618,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && chartOverlay?.classList.contains('is-open')) closeChart();
+    // Cmd/Ctrl+Shift+B → focus the save form
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'b') {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      contentInput.focus();
+    }
   });
 
   exportBtn?.addEventListener('click', () => exportData(items));
