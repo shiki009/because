@@ -3,8 +3,12 @@
   "name": "Because — Pick from tabs",
   "description": "Pick from your open browser tabs when saving to Because.",
   "version": "1.0.0",
-  "permissions": ["tabs", "activeTab"],
-  "host_permissions": ["<all_urls>", "http://localhost/*", "http://127.0.0.1/*", "https://*.vercel.app/*"],
+  "permissions": ["tabs"],
+  "host_permissions": [
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "https://because-five.vercel.app/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
@@ -13,7 +17,6 @@
       "matches": [
         "http://localhost/*",
         "http://127.0.0.1/*",
-        "file:///*",
         "https://because-five.vercel.app/*"
       ],
       "js": ["content.js"],

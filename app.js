@@ -273,6 +273,12 @@ function importData(items, fileInput, onRefresh) {
   const file = fileInput.files?.[0];
   if (!file) return;
 
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('File too large (max 10 MB)', 'error');
+    fileInput.value = '';
+    return;
+  }
+
   const reader = new FileReader();
   reader.onload = async (e) => {
     try {
@@ -282,7 +288,15 @@ function importData(items, fileInput, onRefresh) {
         showToast('No valid items in file', 'error');
         return;
       }
-      const valid = imported.filter(x => x.content && x.because && x.id);
+      if (imported.length > 10000) {
+        showToast('File contains too many items (max 10,000)', 'error');
+        return;
+      }
+      const valid = imported.filter(x =>
+        typeof x.content === 'string' && x.content &&
+        typeof x.because === 'string' && x.because &&
+        typeof x.id === 'string' && x.id
+      );
       const merged = [...valid, ...items].filter((item, i, arr) =>
         arr.findIndex(x => x.id === item.id) === i
       );
