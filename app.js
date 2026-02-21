@@ -858,13 +858,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  exportBtn?.addEventListener('click', () => exportData(items));
-  importBtn?.addEventListener('click', () => importInput?.click());
+  // Data menu toggle
+  const dataMenuBtn = document.getElementById('data-menu-btn');
+  const dataMenu = document.getElementById('data-menu');
+
+  function closeDataMenu() {
+    dataMenu?.setAttribute('hidden', '');
+    dataMenuBtn?.classList.remove('is-open');
+    dataMenuBtn?.setAttribute('aria-expanded', 'false');
+  }
+
+  dataMenuBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = !dataMenu?.hasAttribute('hidden');
+    if (isOpen) closeDataMenu();
+    else {
+      dataMenu?.removeAttribute('hidden');
+      dataMenuBtn?.classList.add('is-open');
+      dataMenuBtn?.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  document.addEventListener('click', closeDataMenu);
+  dataMenu?.addEventListener('click', (e) => e.stopPropagation());
+
+  exportBtn?.addEventListener('click', () => { closeDataMenu(); exportData(items); });
+  importBtn?.addEventListener('click', () => { closeDataMenu(); importInput?.click(); });
   importInput?.addEventListener('change', () => importData(items, importInput, showList));
 
   const importBookmarksBtn = document.getElementById('import-bookmarks-btn');
   const importBookmarksInput = document.getElementById('import-bookmarks-input');
-  importBookmarksBtn?.addEventListener('click', () => importBookmarksInput?.click());
+  importBookmarksBtn?.addEventListener('click', () => { closeDataMenu(); importBookmarksInput?.click(); });
   importBookmarksInput?.addEventListener('change', () => importBookmarks(items, importBookmarksInput, showList));
 
   document.getElementById('theme-toggle')?.addEventListener('click', () => {

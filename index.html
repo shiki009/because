@@ -111,6 +111,18 @@
           aria-label="Search your saved items"
         >
         <button id="select-btn" type="button" title="Select items" aria-label="Select items">Select</button>
+        <div class="data-menu-wrap">
+          <button id="data-menu-btn" type="button" title="Data options" aria-label="Data options" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </button>
+          <div id="data-menu" class="data-menu" hidden role="menu">
+            <button id="export" type="button" role="menuitem">⬇ Download backup</button>
+            <button id="import-btn" type="button" role="menuitem">⬆ Restore from backup</button>
+            <button id="import-bookmarks-btn" type="button" role="menuitem">🔖 Import browser bookmarks</button>
+          </div>
+        </div>
+        <input type="file" id="import-input" accept=".json" hidden>
+        <input type="file" id="import-bookmarks-input" accept=".html,.htm" hidden>
         <button id="chart-btn" type="button" title="View topic chart" aria-label="View topic chart">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
             <circle cx="12" cy="12" r="9"/>
@@ -150,17 +162,7 @@
     </main>
 
     <footer>
-      <div class="footer-top">
-        <p class="footer-privacy">Your whys stay on this device. No account. No tracking.</p>
-        <p class="footer-storage">Data is stored locally in your browser (IndexedDB). Nothing is sent to any server.</p>
-        <div class="footer-buttons">
-          <button id="export" type="button">Download backup</button>
-          <button id="import-btn" type="button">Restore from backup</button>
-          <button id="import-bookmarks-btn" type="button">Import browser bookmarks</button>
-          <input type="file" id="import-input" accept=".json" hidden>
-          <input type="file" id="import-bookmarks-input" accept=".html,.htm" hidden>
-        </div>
-      </div>
+      <p class="footer-privacy">Your whys stay on this device — no account, no tracking, no server.</p>
     </footer>
   </div>
 

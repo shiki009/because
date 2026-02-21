@@ -349,6 +349,65 @@ body.because-extension-loaded .extension-hint {
   background: rgba(224, 124, 124, 0.1) !important;
 }
 
+/* Data menu */
+.data-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+#data-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 0.9rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+#data-menu-btn:hover,
+#data-menu-btn.is-open {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.data-menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  min-width: 210px;
+  z-index: 200;
+  overflow: hidden;
+}
+
+.data-menu[hidden] { display: none; }
+
+.data-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.data-menu button:hover {
+  background: rgba(212, 168, 83, 0.08);
+  color: var(--accent);
+}
+
 /* Chart overlay */
 .chart-overlay {
   position: fixed;
@@ -813,42 +872,9 @@ footer {
   color: var(--text-muted);
 }
 
-.footer-top {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 .footer-privacy {
   margin: 0;
-}
-
-.footer-storage {
-  margin: 0;
-  font-size: 0.75rem;
-  opacity: 0.8;
-}
-
-.footer-buttons {
-  display: flex;
-  gap: 0.75rem;
-}
-
-.footer-buttons button {
-  font-family: var(--font-body);
-  font-size: 0.85rem;
-  padding: 0.5rem 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color 0.2s, border-color 0.2s;
-}
-
-.footer-buttons button:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+  text-align: center;
 }
 
 /* Extension install page */
@@ -1122,10 +1148,6 @@ footer {
   .item-actions {
     flex-wrap: wrap;
     gap: 0.4rem;
-  }
-
-  .footer-buttons {
-    flex-wrap: wrap;
   }
 
   .empty-headline {
