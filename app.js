@@ -5,6 +5,7 @@
 
 import { loadItems, saveItems } from './storage.js';
 import { computeRadarData, renderRadarChart } from './chart.js';
+import { classifyWithUserKey, getUserAIConfig, saveUserAIConfig, clearUserAIConfig } from './ai.js';
 
 function showToast(message, type = 'info') {
   const existing = document.getElementById('toast');
@@ -249,19 +250,8 @@ async function editItem(item, items, onRefresh) {
       await saveItems(items);
       showToast('Saved', 'success');
       try {
-        const res = await fetch('/api/segment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: newContent, because: newBecause })
-        });
-        if (res.ok) {
-          const { topics } = await res.json();
-          item.topics = (topics?.length ? topics : ['Other']);
-          await saveItems(items);
-        } else {
-          item.topics = ['Other'];
-          await saveItems(items);
-        }
+        item.topics = await classifyItem(newContent, newBecause);
+        await saveItems(items);
       } catch {
         item.topics = ['Other'];
         await saveItems(items);
@@ -439,6 +429,21 @@ function importData(items, fileInput, onRefresh) {
   reader.readAsText(file);
 }
 
+async function classifyItem(content, because) {
+  const { provider, apiKey } = getUserAIConfig();
+  if (apiKey) {
+    return classifyWithUserKey(content, because, provider, apiKey);
+  }
+  const res = await fetch('/api/segment', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ content, because })
+  });
+  if (!res.ok) return ['Other'];
+  const { topics } = await res.json();
+  return topics?.length ? topics : ['Other'];
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   const contentInput = document.getElementById('content');
   const becauseInput = document.getElementById('because');
@@ -533,17 +538,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     contentInput.focus();
 
     try {
-      const res = await fetch('/api/segment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, because })
-      });
-      if (res.ok) {
-        const { topics } = await res.json();
-        item.topics = (topics?.length ? topics : ['Other']);
-      } else {
-        item.topics = ['Other'];
-      }
+      item.topics = await classifyItem(content, because);
     } catch {
       item.topics = ['Other'];
     } finally {
@@ -675,7 +670,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && chartOverlay?.classList.contains('is-open')) closeChart();
+    if (e.key === 'Escape') {
+      if (chartOverlay?.classList.contains('is-open')) closeChart();
+      if (aiSettingsOverlay?.classList.contains('is-open')) closeAISettings();
+    }
     // Cmd/Ctrl+Shift+B → focus the save form
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'b') {
       e.preventDefault();
@@ -694,6 +692,77 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.setAttribute('data-theme', next);
     localStorage.setItem('because-theme', next);
   });
+
+  // AI settings modal
+  const aiSettingsBtn = document.getElementById('ai-settings-btn');
+  const aiSettingsOverlay = document.getElementById('ai-settings-overlay');
+  const aiSettingsClose = document.getElementById('ai-settings-close');
+  const aiProviderSelect = document.getElementById('ai-provider-select');
+  const aiKeyInput = document.getElementById('ai-key-input');
+  const aiSettingsSave = document.getElementById('ai-settings-save');
+  const aiSettingsClear = document.getElementById('ai-settings-clear');
+  const aiSettingsStatus = document.getElementById('ai-settings-status');
+
+  function updateAISettingsUI() {
+    const { provider, apiKey } = getUserAIConfig();
+    if (apiKey) {
+      const providerName = { groq: 'Groq', openai: 'OpenAI', gemini: 'Gemini' }[provider] || provider;
+      aiSettingsStatus.textContent = `Using your ${providerName} key for classification.`;
+      aiSettingsStatus.classList.add('visible');
+      aiSettingsBtn?.classList.add('has-key');
+    } else {
+      aiSettingsStatus.textContent = 'Using server key (fallback). Add your own key above.';
+      aiSettingsStatus.classList.add('visible');
+      aiSettingsBtn?.classList.remove('has-key');
+    }
+  }
+
+  function openAISettings() {
+    const { provider, apiKey } = getUserAIConfig();
+    if (aiProviderSelect) aiProviderSelect.value = provider;
+    if (aiKeyInput) aiKeyInput.value = apiKey;
+    updateAISettingsUI();
+    aiSettingsOverlay?.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => aiKeyInput?.focus(), 50);
+  }
+
+  function closeAISettings() {
+    aiSettingsOverlay?.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  aiSettingsBtn?.addEventListener('click', openAISettings);
+  aiSettingsClose?.addEventListener('click', closeAISettings);
+  aiSettingsOverlay?.addEventListener('click', (e) => {
+    if (e.target === aiSettingsOverlay) closeAISettings();
+  });
+
+  aiSettingsSave?.addEventListener('click', () => {
+    const provider = aiProviderSelect?.value || 'groq';
+    const key = aiKeyInput?.value.trim() || '';
+    if (!key) {
+      showToast('Paste an API key first', 'error');
+      aiKeyInput?.focus();
+      return;
+    }
+    saveUserAIConfig(provider, key);
+    updateAISettingsUI();
+    showToast('API key saved', 'success');
+  });
+
+  aiSettingsClear?.addEventListener('click', () => {
+    clearUserAIConfig();
+    if (aiKeyInput) aiKeyInput.value = '';
+    if (aiProviderSelect) aiProviderSelect.value = 'groq';
+    updateAISettingsUI();
+    showToast('API key removed', 'info');
+  });
+
+  // Reflect saved key state on load
+  if (localStorage.getItem('because-ai-key')) {
+    aiSettingsBtn?.classList.add('has-key');
+  }
 
   contentInput.focus();
 });
