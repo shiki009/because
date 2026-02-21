@@ -268,7 +268,8 @@ async function editItem(item, items, onRefresh) {
       }
       finish();
     } catch (e) {
-      showToast(e.message || 'Failed to save', 'error');
+      if (isQuotaError(e)) showQuotaToast(() => exportData(items));
+      else showToast(e.message || 'Failed to save', 'error');
     }
   };
 
@@ -302,6 +303,43 @@ function deleteItem(id, items, onRefresh) {
     try { await saveItems(items); } catch { /* silent */ }
     (onRefresh || (() => {}))();
   });
+}
+
+function isQuotaError(e) {
+  return e?.name === 'QuotaExceededError' || /quota|storage.*(full|exceeded)/i.test(e?.message || '');
+}
+
+function showQuotaToast(onExport) {
+  const existing = document.getElementById('toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toast';
+  toast.className = 'toast toast-undo';
+  toast.setAttribute('role', 'alert');
+
+  const msg = document.createElement('span');
+  msg.textContent = 'Storage full.';
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'toast-undo-btn';
+  btn.textContent = 'Export now';
+  btn.addEventListener('click', () => {
+    onExport();
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  });
+
+  toast.appendChild(msg);
+  toast.appendChild(btn);
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  }, 8000);
 }
 
 function showUndoToast(message, onUndo) {
@@ -483,7 +521,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       await saveItems(items);
     } catch (e) {
       items.shift();
-      showToast(e.message || 'Failed to save', 'error');
+      if (isQuotaError(e)) showQuotaToast(() => exportData(items));
+      else showToast(e.message || 'Failed to save', 'error');
       return;
     }
 

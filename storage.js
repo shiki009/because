@@ -45,7 +45,14 @@ async function setToIndexedDB(items) {
     store.clear();
     items.forEach((item) => store.put(item));
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => {
+      const err = tx.error;
+      if (err?.name === 'QuotaExceededError') {
+        reject(Object.assign(new Error('Storage is full. Download a backup to free up space.'), { name: 'QuotaExceededError' }));
+      } else {
+        reject(err);
+      }
+    };
   });
 }
 
@@ -99,7 +106,8 @@ export async function saveItems(items) {
       storageMode = 'indexeddb';
       return;
     }
-  } catch {
+  } catch (e) {
+    if (e?.name === 'QuotaExceededError') throw e; // don't fall back — localStorage is smaller
     storageMode = 'localStorage';
   }
   setToLocalStorage(items);
