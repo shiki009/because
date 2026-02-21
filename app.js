@@ -466,6 +466,67 @@ function importData(items, fileInput, onRefresh) {
   reader.readAsText(file);
 }
 
+function importBookmarks(items, fileInput, onRefresh) {
+  const file = fileInput.files?.[0];
+  if (!file) return;
+
+  if (file.size > 20 * 1024 * 1024) {
+    showToast('File too large (max 20 MB)', 'error');
+    fileInput.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const html = e.target.result;
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const links = Array.from(doc.querySelectorAll('a[href]'));
+
+      const bookmarks = links
+        .map(a => ({ url: a.href?.trim(), title: a.textContent?.trim() }))
+        .filter(b => /^https?:\/\//i.test(b.url));
+
+      if (bookmarks.length === 0) {
+        showToast('No bookmarks found in file', 'error');
+        fileInput.value = '';
+        return;
+      }
+
+      if (bookmarks.length > 5000) {
+        showToast(`Found ${bookmarks.length} bookmarks — importing first 5,000`, 'info');
+        bookmarks.splice(5000);
+      }
+
+      const existingUrls = new Set(items.map(i => i.content));
+      const newBookmarks = bookmarks.filter(b => !existingUrls.has(b.url));
+
+      if (newBookmarks.length === 0) {
+        showToast('All bookmarks already saved', 'info');
+        fileInput.value = '';
+        return;
+      }
+
+      const newItems = newBookmarks.map(b => createItem(
+        b.url,
+        b.title ? `Saved from browser: ${b.title}` : 'Imported from browser bookmarks'
+      ));
+
+      const merged = [...newItems, ...items];
+      await saveItems(merged);
+      items.length = 0;
+      items.push(...merged);
+      if (onRefresh) onRefresh();
+      showToast(`Imported ${newItems.length} bookmarks — fill in the "Because" for each!`, 'success');
+    } catch {
+      showToast('Could not read bookmark file', 'error');
+    }
+    fileInput.value = '';
+  };
+  reader.readAsText(file);
+}
+
 async function classifyItem(content, because) {
   const { provider, apiKey } = getUserAIConfig();
   if (apiKey) {
@@ -757,6 +818,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   exportBtn?.addEventListener('click', () => exportData(items));
   importBtn?.addEventListener('click', () => importInput?.click());
   importInput?.addEventListener('change', () => importData(items, importInput, showList));
+
+  const importBookmarksBtn = document.getElementById('import-bookmarks-btn');
+  const importBookmarksInput = document.getElementById('import-bookmarks-input');
+  importBookmarksBtn?.addEventListener('click', () => importBookmarksInput?.click());
+  importBookmarksInput?.addEventListener('change', () => importBookmarks(items, importBookmarksInput, showList));
 
   document.getElementById('theme-toggle')?.addEventListener('click', () => {
     const root = document.documentElement;
