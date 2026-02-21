@@ -332,6 +332,39 @@ function showQuotaToast(onExport) {
   }, 8000);
 }
 
+function showNudgeToast(message, onAction, actionLabel) {
+  const existing = document.getElementById('toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'toast';
+  toast.className = 'toast toast-undo';
+  toast.setAttribute('role', 'status');
+
+  const msg = document.createElement('span');
+  msg.textContent = message;
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'toast-undo-btn';
+  btn.textContent = actionLabel;
+  btn.addEventListener('click', () => {
+    onAction();
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  });
+
+  toast.appendChild(msg);
+  toast.appendChild(btn);
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('visible'));
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 300);
+  }, 7000);
+}
+
 function showUndoToast(message, onUndo) {
   const existing = document.getElementById('toast');
   if (existing) existing.remove();
@@ -536,6 +569,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     becauseInput.value = '';
     if (becauseHint) becauseHint.hidden = true;
     contentInput.focus();
+
+    // First-save nudge: remind about backup
+    if (items.length === 1 && !localStorage.getItem('because-nudge-backup')) {
+      localStorage.setItem('because-nudge-backup', '1');
+      setTimeout(() => showNudgeToast(
+        '💾 Tip: use "Download backup" in the footer to keep your whys safe.',
+        () => exportData(items),
+        'Back up now'
+      ), 1200);
+    }
+
+    // Third-save nudge: suggest AI key if none set
+    if (items.length === 3 && !localStorage.getItem('because-ai-key') && !localStorage.getItem('because-nudge-ai')) {
+      localStorage.setItem('because-nudge-ai', '1');
+      setTimeout(() => showNudgeToast(
+        '✨ Want smarter topic labels? Add a free AI key via the ✦ button.',
+        () => document.getElementById('ai-settings-btn')?.click(),
+        'Set up AI'
+      ), 1200);
+    }
 
     try {
       item.topics = await classifyItem(content, because);
