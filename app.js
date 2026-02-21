@@ -74,7 +74,9 @@ function filterItems(items, query, topicFilter = null) {
   );
 }
 
-function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify) {
+const ALL_TOPICS = ['Learning', 'Ideas', 'Reference', 'Work', 'Inspiration', 'Personal', 'Other'];
+
+function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify, onTopicsEdit) {
   const li = document.createElement('li');
   li.className = 'item';
   li.dataset.id = item.id;
@@ -89,7 +91,7 @@ function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify) {
   const isOther = topics.length === 1 && topics[0] === 'Other';
   const topicsHtml = item._classifying
     ? `<div class="item-topics"><span class="item-topic-loading">classifying…</span></div>`
-    : `<div class="item-topics">${topics.map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}${isOther ? `<button type="button" class="item-reclassify" title="Re-classify with AI" aria-label="Re-classify">↻</button>` : ''}</div>`;
+    : `<div class="item-topics">${topics.map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}${isOther ? `<button type="button" class="item-reclassify" title="Re-classify with AI" aria-label="Re-classify">↻</button>` : ''}<button type="button" class="item-topic-edit" title="Edit topics" aria-label="Edit topics">+</button></div>`;
 
   li.innerHTML = `
     <input type="checkbox" class="item-checkbox" aria-label="Select item">
@@ -109,6 +111,44 @@ function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify) {
   });
 
   li.querySelector('.item-reclassify')?.addEventListener('click', () => onReclassify?.(item));
+
+  li.querySelector('.item-topic-edit')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Close any other open popovers
+    document.querySelectorAll('.topic-edit-popover').forEach(p => p.remove());
+
+    const currentTopics = item.topics?.length ? item.topics : ['Other'];
+    const popover = document.createElement('div');
+    popover.className = 'topic-edit-popover';
+    popover.innerHTML = `
+      <p class="topic-edit-label">Edit topics</p>
+      ${ALL_TOPICS.map(t => `
+        <label class="topic-edit-option">
+          <input type="checkbox" value="${escapeHtml(t)}" ${currentTopics.includes(t) ? 'checked' : ''}>
+          ${escapeHtml(t)}
+        </label>
+      `).join('')}
+      <button type="button" class="topic-edit-save">Save</button>
+    `;
+
+    const btn = li.querySelector('.item-topic-edit');
+    btn.parentElement.appendChild(popover);
+
+    popover.querySelector('.topic-edit-save').addEventListener('click', async () => {
+      const checked = Array.from(popover.querySelectorAll('input:checked')).map(cb => cb.value);
+      item.topics = checked.length ? checked : ['Other'];
+      popover.remove();
+      await onTopicsEdit?.(item);
+    });
+
+    const closePopover = (ev) => {
+      if (!popover.contains(ev.target)) {
+        popover.remove();
+        document.removeEventListener('click', closePopover);
+      }
+    };
+    setTimeout(() => document.addEventListener('click', closePopover), 0);
+  });
 
   li.querySelector('.item-checkbox')?.addEventListener('change', (e) => {
     if (e.target.checked) li.classList.add('is-selected');
@@ -132,7 +172,7 @@ function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify) {
 
 const PAGE_SIZE = 15;
 
-function renderList(items, searchQuery, limit, onRefresh, topicFilter = null, onTopicClick = null, onReclassify = null) {
+function renderList(items, searchQuery, limit, onRefresh, topicFilter = null, onTopicClick = null, onReclassify = null, onTopicsEdit = null) {
   const listEl = document.getElementById('list');
   const emptyEl = document.getElementById('empty-state');
   const loadMoreWrap = document.getElementById('load-more-wrap');
@@ -187,7 +227,7 @@ function renderList(items, searchQuery, limit, onRefresh, topicFilter = null, on
   const onDelete = (id) => deleteItem(id, items, onRefresh);
   const onEdit = (it) => editItem(it, items, onRefresh);
   toShow.forEach(item => {
-    listEl.appendChild(renderItem(item, onDelete, onEdit, onTopicClick, onReclassify));
+    listEl.appendChild(renderItem(item, onDelete, onEdit, onTopicClick, onReclassify, onTopicsEdit));
   });
   if (limit != null && sorted.length > limit) {
     loadMoreWrap.hidden = false;
@@ -624,6 +664,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (topic) searchInput.value = '';
   }
 
+  async function editTopics(item) {
+    try {
+      await saveItems(items);
+      showList();
+    } catch (e) {
+      if (isQuotaError(e)) showQuotaToast(() => exportData(items));
+      else showToast('Failed to save topics', 'error');
+    }
+  }
+
   async function reclassifyItem(item) {
     if (item._classifying) return;
     item._classifying = true;
@@ -640,7 +690,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function showList() {
-    renderList(items, searchInput.value, visibleCount, showList, activeTopicFilter, onTopicClick, reclassifyItem);
+    renderList(items, searchInput.value, visibleCount, showList, activeTopicFilter, onTopicClick, reclassifyItem, editTopics);
   }
 
   showList();

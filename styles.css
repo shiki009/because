@@ -713,6 +713,90 @@ body.because-extension-loaded .extension-hint {
   border-color: var(--accent);
 }
 
+.item-topic-edit {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.35rem;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1;
+  opacity: 0;
+}
+
+.item:hover .item-topic-edit {
+  opacity: 1;
+}
+
+.item-topic-edit:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  opacity: 1;
+}
+
+.topic-edit-popover {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  z-index: 300;
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+
+.topic-edit-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.1rem;
+}
+
+.topic-edit-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.15rem 0;
+}
+
+.topic-edit-option input {
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.topic-edit-save {
+  margin-top: 0.35rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.topic-edit-save:hover {
+  background: var(--accent-dim);
+}
+
+.item-topics {
+  position: relative;
+}
+
 .item-reclassify {
   font-size: 0.7rem;
   padding: 0.2rem 0.4rem;
