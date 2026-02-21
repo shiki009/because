@@ -4,24 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Install extension — Because</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app">
     <header class="hero">
-      <a href="./" class="back-link">← Back to Because</a>
-      <h1>Tab picker extension</h1>
-      <p class="tagline">Install the extension to pick from your open tabs. No cost, no Chrome Web Store — you load it yourself.</p>
+      <div class="hero-row">
+        <div>
+          <a href="./" class="back-link">← Because</a>
+          <h1>Tab picker</h1>
+          <p class="tagline">Pick from your open tabs when saving. Free — no Chrome Web Store needed.</p>
+        </div>
+      </div>
     </header>
 
-    <main role="main" style="max-width: 560px;">
+    <main role="main" class="install-page">
       <p class="download-extension">
         <a href="extension.zip" download class="btn-download">Download extension (zip)</a>
       </p>
+
       <ol class="install-steps">
         <li>
-          <strong>Get the extension</strong>
-          <p>Click the button above to download <code>extension.zip</code>. Unzip it somewhere — you'll get a folder with the extension files.</p>
+          <strong>Download</strong>
+          <p>Click the button above to get <code>extension.zip</code>. Unzip it — you'll get a folder with the extension files.</p>
         </li>
         <li>
           <strong>Open Chrome Extensions</strong>
@@ -29,36 +38,24 @@
         </li>
         <li>
           <strong>Enable Developer mode</strong>
-          <p>Turn on the <strong>Developer mode</strong> toggle (top-right).</p>
+          <p>Turn on the <strong>Developer mode</strong> toggle in the top-right corner.</p>
         </li>
         <li>
           <strong>Load unpacked</strong>
-          <p>Click <strong>Load unpacked</strong>, then select the folder you extracted from the zip.</p>
+          <p>Click <strong>Load unpacked</strong> and select the folder you extracted from the zip.</p>
         </li>
         <li>
-          <strong>Use on your deployed app?</strong>
-          <p>By default the extension runs on <code>localhost</code> and <code>file://</code>. To use it on your deployed Because URL, edit <code>manifest.json</code> in the extracted folder and add your domain to the <code>matches</code> array. Example:</p>
-          <pre>// In manifest.json, content_scripts.matches:
-"https://your-app.vercel.app/*"</pre>
+          <strong>Using on a custom domain?</strong>
+          <p>The extension runs on <code>localhost</code> and <code>because-five.vercel.app</code> by default. To add another domain, edit <code>manifest.json</code> in the extracted folder and add your URL to the <code>matches</code> array:</p>
+          <pre>"https://your-app.vercel.app/*"</pre>
         </li>
       </ol>
-      <p class="install-note">A tab icon button will appear next to the content input when you use Because on a matching URL.</p>
-      <p><a href="./" class="btn-back">← Return to Because</a></p>
+
+      <p class="install-note">Once installed, a tab-picker button appears next to the content input on Because.</p>
+      <p><a href="./" class="back-link">← Return to Because</a></p>
     </main>
   </div>
-  <style>
-    .download-extension { margin-bottom: 2rem; }
-    .btn-download { display: inline-block; padding: 0.75rem 1.25rem; background: var(--accent); color: var(--bg); text-decoration: none; border-radius: var(--radius); font-weight: 600; transition: background 0.2s; }
-    .btn-download:hover { background: var(--accent-dim); }
-    .back-link { color: var(--accent); text-decoration: none; font-size: 0.95rem; margin-bottom: 1rem; display: inline-block; }
-    .back-link:hover { text-decoration: underline; }
-    .install-steps { list-style: decimal; padding-left: 1.5rem; line-height: 1.7; }
-    .install-steps li { margin-bottom: 1.5rem; }
-    .install-steps code { background: var(--surface); padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
-    .install-steps pre { background: var(--surface); padding: 1rem; border-radius: var(--radius); overflow-x: auto; font-size: 0.85rem; margin-top: 0.5rem; }
-    .install-note { color: var(--text-muted); font-size: 0.95rem; margin: 2rem 0 1rem; }
-    .btn-back { color: var(--accent); text-decoration: none; }
-    .btn-back:hover { text-decoration: underline; }
-  </style>
+
+  <script src="theme.js"></script>
 </body>
 </html>

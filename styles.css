@@ -626,6 +626,77 @@ footer {
   border-color: var(--accent);
 }
 
+/* Extension install page */
+.back-link {
+  color: var(--accent);
+  text-decoration: none;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.install-page {
+  max-width: 560px;
+}
+
+.download-extension {
+  margin-bottom: 2rem;
+}
+
+.btn-download {
+  display: inline-block;
+  padding: 0.85rem 1.5rem;
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+
+.btn-download:hover {
+  background: var(--accent-dim);
+}
+
+.install-steps {
+  list-style: decimal;
+  padding-left: 1.5rem;
+  line-height: 1.7;
+}
+
+.install-steps li {
+  margin-bottom: 1.5rem;
+}
+
+.install-steps code {
+  background: var(--surface);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.install-steps pre {
+  background: var(--surface);
+  padding: 1rem;
+  border-radius: var(--radius);
+  overflow-x: auto;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  border: 1px solid var(--border);
+}
+
+.install-note {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 2rem 0 1.5rem;
+}
+
 /* Animations */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-8px); }
