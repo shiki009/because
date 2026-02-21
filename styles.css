@@ -554,6 +554,20 @@ body.because-extension-loaded .extension-hint {
   border-color: var(--accent);
 }
 
+.item-topic-loading {
+  font-size: 0.65rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 .topic-filter-chip {
   display: flex;
   align-items: center;

@@ -43,6 +43,12 @@ export function computeRadarData(items) {
 export function renderRadarChart(container, data, onTopicSelect = null) {
   container.innerHTML = '';
 
+  const style = getComputedStyle(document.documentElement);
+  const colorBorder  = style.getPropertyValue('--border').trim()  || '#2a2a2a';
+  const colorMuted   = style.getPropertyValue('--text-muted').trim() || '#8a8a8a';
+  const colorAccent  = style.getPropertyValue('--accent').trim()  || '#d4a853';
+  const colorAccentHover = style.getPropertyValue('--accent-dim').trim() || '#b8923f';
+
   const size = 320;
   const center = size / 2;
   const radius = 90;
@@ -65,7 +71,7 @@ export function renderRadarChart(container, data, onTopicSelect = null) {
     circle.setAttribute('cy', center);
     circle.setAttribute('r', (radius * r) / 4);
     circle.setAttribute('fill', 'none');
-    circle.setAttribute('stroke', '#2a2a2a');
+    circle.setAttribute('stroke', colorBorder);
     circle.setAttribute('stroke-width', '0.5');
     svg.appendChild(circle);
   }
@@ -82,24 +88,25 @@ export function renderRadarChart(container, data, onTopicSelect = null) {
     line.setAttribute('y1', center);
     line.setAttribute('x2', x);
     line.setAttribute('y2', y);
-    line.setAttribute('stroke', '#2a2a2a');
+    line.setAttribute('stroke', colorBorder);
     line.setAttribute('stroke-width', '0.5');
     svg.appendChild(line);
 
+    const hasItems = data.counts[i] > 0;
     const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     text.setAttribute('x', center + (radius + 36) * Math.cos(angle));
     text.setAttribute('y', center + (radius + 36) * Math.sin(angle));
     text.setAttribute('text-anchor', 'middle');
     text.setAttribute('dominant-baseline', 'middle');
-    text.setAttribute('fill', data.counts[i] > 0 ? '#d4a853' : '#8a8a8a');
+    text.setAttribute('fill', hasItems ? colorAccent : colorMuted);
     text.setAttribute('font-size', '11');
     text.textContent = `${label} (${data.counts[i]})`;
-    if (onTopicSelect && data.counts[i] > 0) {
+    if (onTopicSelect && hasItems) {
       text.style.cursor = 'pointer';
       text.style.textDecoration = 'underline';
       text.addEventListener('click', () => onTopicSelect(label));
-      text.addEventListener('mouseenter', () => text.setAttribute('fill', '#e8c06a'));
-      text.addEventListener('mouseleave', () => text.setAttribute('fill', '#d4a853'));
+      text.addEventListener('mouseenter', () => text.setAttribute('fill', colorAccentHover));
+      text.addEventListener('mouseleave', () => text.setAttribute('fill', colorAccent));
     }
     svg.appendChild(text);
 
@@ -114,8 +121,8 @@ export function renderRadarChart(container, data, onTopicSelect = null) {
   const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ') + ' Z';
   const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   polygon.setAttribute('d', pathD);
-  polygon.setAttribute('fill', 'rgba(212, 168, 83, 0.2)');
-  polygon.setAttribute('stroke', '#d4a853');
+  polygon.setAttribute('fill', `${colorAccent}33`);
+  polygon.setAttribute('stroke', colorAccent);
   polygon.setAttribute('stroke-width', '2');
   polygon.setAttribute('stroke-linejoin', 'round');
   svg.appendChild(polygon);

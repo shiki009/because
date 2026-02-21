@@ -84,8 +84,9 @@ function renderItem(item, onDelete, onEdit, onTopicClick) {
     ? `<a href="${escapeHtml(item.content)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.content)}</a>`
     : escapeHtml(item.content);
 
-  const topics = item.topics?.length ? item.topics : ['Other'];
-  const topicsHtml = `<div class="item-topics">${topics.map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}</div>`;
+  const topicsHtml = item._classifying
+    ? `<div class="item-topics"><span class="item-topic-loading">classifying…</span></div>`
+    : `<div class="item-topics">${(item.topics?.length ? item.topics : ['Other']).map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}</div>`;
 
   li.innerHTML = `
     ${topicsHtml}
@@ -451,10 +452,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!content || !because) {
       showToast('Fill in both fields', 'error');
+      if (!content) contentInput.focus();
+      else becauseInput.focus();
+      return;
+    }
+
+    // Submit-time quality check on Because field
+    const VAGUE = ['interesting', 'cool', 'good', 'nice', 'useful', 'great', 'awesome', 'ok', 'okay', 'fine', 'neat'];
+    const becauseWords = because.toLowerCase().split(/\s+/);
+    const isVague = becauseWords.length <= 2 && VAGUE.some(w => becauseWords.includes(w));
+    const isTooShort = because.length < 8;
+    if (isVague || isTooShort) {
+      const hint = document.getElementById('because-hint');
+      if (hint) {
+        hint.textContent = isVague
+          ? 'Try to be more specific — why does this matter to you?'
+          : 'A bit more detail will help you remember why later.';
+        hint.hidden = false;
+      }
+      becauseInput.focus();
+      becauseInput.select();
       return;
     }
 
     const item = createItem(content, because);
+    item._classifying = true;
     items.unshift(item);
 
     try {
@@ -468,6 +490,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showList();
     contentInput.value = '';
     becauseInput.value = '';
+    if (becauseHint) becauseHint.hidden = true;
     contentInput.focus();
 
     try {
@@ -479,17 +502,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (res.ok) {
         const { topics } = await res.json();
         item.topics = (topics?.length ? topics : ['Other']);
-        await saveItems(items);
-        showList();
       } else {
-        const err = await res.json().catch(() => ({}));
-        showToast(err.error || `Segment failed (${res.status})`, 'error');
         item.topics = ['Other'];
-        await saveItems(items);
-        showList();
       }
     } catch {
       item.topics = ['Other'];
+    } finally {
+      delete item._classifying;
       await saveItems(items);
       showList();
     }
