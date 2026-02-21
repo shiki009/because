@@ -58,16 +58,22 @@ function formatDate(iso) {
   });
 }
 
-function filterItems(items, query) {
-  if (!query.trim()) return items;
+function filterItems(items, query, topicFilter = null) {
+  let result = items;
+  if (topicFilter) {
+    result = result.filter(item =>
+      (item.topics?.length ? item.topics : ['Other']).includes(topicFilter)
+    );
+  }
+  if (!query.trim()) return result;
   const q = query.toLowerCase().trim();
-  return items.filter(item =>
+  return result.filter(item =>
     item.content.toLowerCase().includes(q) ||
     item.because.toLowerCase().includes(q)
   );
 }
 
-function renderItem(item, onDelete, onEdit) {
+function renderItem(item, onDelete, onEdit, onTopicClick) {
   const li = document.createElement('li');
   li.className = 'item';
   li.dataset.id = item.id;
@@ -79,7 +85,7 @@ function renderItem(item, onDelete, onEdit) {
     : escapeHtml(item.content);
 
   const topics = item.topics?.length ? item.topics : ['Other'];
-  const topicsHtml = `<div class="item-topics">${topics.map(t => `<span class="item-topic">${escapeHtml(t)}</span>`).join('')}</div>`;
+  const topicsHtml = `<div class="item-topics">${topics.map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}</div>`;
 
   li.innerHTML = `
     ${topicsHtml}
@@ -92,6 +98,10 @@ function renderItem(item, onDelete, onEdit) {
       <button type="button" class="delete" aria-label="Delete item">Delete</button>
     </div>
   `;
+
+  li.querySelectorAll('.item-topic').forEach(btn => {
+    btn.addEventListener('click', () => onTopicClick?.(btn.dataset.topic));
+  });
 
   li.querySelector('.copy').addEventListener('click', () => {
     const text = `${item.content}\nBecause ${item.because}`;
@@ -108,31 +118,66 @@ function renderItem(item, onDelete, onEdit) {
 
 const PAGE_SIZE = 15;
 
-function renderList(items, searchQuery, limit, onRefresh) {
+function renderList(items, searchQuery, limit, onRefresh, topicFilter = null, onTopicClick = null) {
   const listEl = document.getElementById('list');
   const emptyEl = document.getElementById('empty-state');
   const loadMoreWrap = document.getElementById('load-more-wrap');
   const loadMoreBtn = document.getElementById('load-more');
 
+  // Active topic filter chip
+  let filterChip = document.getElementById('topic-filter-chip');
+  if (topicFilter) {
+    if (!filterChip) {
+      filterChip = document.createElement('div');
+      filterChip.id = 'topic-filter-chip';
+      filterChip.className = 'topic-filter-chip';
+      listEl.parentNode.insertBefore(filterChip, listEl);
+    }
+    filterChip.innerHTML = `Showing: <strong>${escapeHtml(topicFilter)}</strong> <button type="button" class="topic-filter-clear" aria-label="Clear filter">×</button>`;
+    filterChip.querySelector('.topic-filter-clear').addEventListener('click', () => onTopicClick?.(null));
+  } else if (filterChip) {
+    filterChip.remove();
+  }
+
   listEl.innerHTML = '';
-  emptyEl.hidden = items.length > 0;
   loadMoreWrap.hidden = true;
 
-  if (items.length > 0) {
-    const filtered = filterItems(items, searchQuery);
-    const sorted = [...filtered].sort((a, b) =>
-      new Date(b.createdAt) - new Date(a.createdAt)
-    );
-    const toShow = limit != null ? sorted.slice(0, limit) : sorted;
-    const onDelete = (id) => deleteItem(id, items, onRefresh);
-    const onEdit = (it) => editItem(it, items, onRefresh);
-    toShow.forEach(item => {
-      listEl.appendChild(renderItem(item, onDelete, onEdit));
-    });
-    if (limit != null && sorted.length > limit) {
-      loadMoreWrap.hidden = false;
-      loadMoreBtn.textContent = `Load more (${sorted.length - limit} remaining)`;
+  // No items at all → onboarding
+  if (items.length === 0) {
+    emptyEl.hidden = false;
+    return;
+  }
+  emptyEl.hidden = true;
+
+  const filtered = filterItems(items, searchQuery, topicFilter);
+  const sorted = [...filtered].sort((a, b) =>
+    new Date(b.createdAt) - new Date(a.createdAt)
+  );
+
+  // No results for search/filter
+  let noResults = document.getElementById('no-results');
+  if (sorted.length === 0) {
+    if (!noResults) {
+      noResults = document.createElement('p');
+      noResults.id = 'no-results';
+      noResults.className = 'no-results';
+      listEl.parentNode.insertBefore(noResults, loadMoreWrap);
     }
+    const label = topicFilter ? `topic "${topicFilter}"` : `"${searchQuery}"`;
+    noResults.textContent = `No results for ${label}.`;
+    return;
+  }
+  noResults?.remove();
+
+  const toShow = limit != null ? sorted.slice(0, limit) : sorted;
+  const onDelete = (id) => deleteItem(id, items, onRefresh);
+  const onEdit = (it) => editItem(it, items, onRefresh);
+  toShow.forEach(item => {
+    listEl.appendChild(renderItem(item, onDelete, onEdit, onTopicClick));
+  });
+  if (limit != null && sorted.length > limit) {
+    loadMoreWrap.hidden = false;
+    loadMoreBtn.textContent = `Load more (${sorted.length - limit} remaining)`;
   }
 }
 
@@ -344,8 +389,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let visibleCount = PAGE_SIZE;
+  let activeTopicFilter = null;
+
+  function onTopicClick(topic) {
+    activeTopicFilter = topic;
+    visibleCount = PAGE_SIZE;
+    showList();
+    if (topic) searchInput.value = '';
+  }
+
   function showList() {
-    renderList(items, searchInput.value, visibleCount, showList);
+    renderList(items, searchInput.value, visibleCount, showList, activeTopicFilter, onTopicClick);
   }
 
   showList();
@@ -400,6 +454,42 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // Rotating "Because…" placeholder
+  const becausePlaceholders = [
+    'Because it changes how I think about…',
+    'Because I keep forgetting that…',
+    'Because this solves a problem I have with…',
+    'Because I want to come back to this when…',
+    'Because it made me question…',
+    'Because someone I respect recommended it.',
+    'Because I need this for…',
+    'Because it explains why…',
+  ];
+  let placeholderIdx = 0;
+  let placeholderTimer = null;
+
+  function rotatePlaceholder() {
+    placeholderIdx = (placeholderIdx + 1) % becausePlaceholders.length;
+    becauseInput.placeholder = becausePlaceholders[placeholderIdx];
+  }
+
+  function startRotating() {
+    if (placeholderTimer) return;
+    placeholderTimer = setInterval(rotatePlaceholder, 3000);
+  }
+
+  function stopRotating() {
+    clearInterval(placeholderTimer);
+    placeholderTimer = null;
+    becauseInput.placeholder = 'Because…';
+  }
+
+  becauseInput.addEventListener('focus', stopRotating);
+  becauseInput.addEventListener('blur', () => {
+    if (!becauseInput.value) startRotating();
+  });
+  startRotating();
+
   addBtn.addEventListener('click', addNew);
 
   contentInput.addEventListener('keydown', (e) => {
@@ -423,6 +513,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   searchInput.addEventListener('input', () => {
     visibleCount = PAGE_SIZE;
+    activeTopicFilter = null;
     showList();
   });
 
