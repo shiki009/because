@@ -92,6 +92,7 @@ function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify) {
     : `<div class="item-topics">${topics.map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}${isOther ? `<button type="button" class="item-reclassify" title="Re-classify with AI" aria-label="Re-classify">↻</button>` : ''}</div>`;
 
   li.innerHTML = `
+    <input type="checkbox" class="item-checkbox" aria-label="Select item">
     ${topicsHtml}
     <div class="item-content">${contentHtml}</div>
     <div class="item-because">${escapeHtml(item.because)}</div>
@@ -108,6 +109,13 @@ function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify) {
   });
 
   li.querySelector('.item-reclassify')?.addEventListener('click', () => onReclassify?.(item));
+
+  li.querySelector('.item-checkbox')?.addEventListener('change', (e) => {
+    if (e.target.checked) li.classList.add('is-selected');
+    else li.classList.remove('is-selected');
+    // Notify bulk bar to update count
+    document.dispatchEvent(new CustomEvent('bulk-selection-changed'));
+  });
 
   li.querySelector('.copy').addEventListener('click', () => {
     const text = `${item.content}\nBecause ${item.because}`;
@@ -865,6 +873,89 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.setAttribute('data-theme', next);
     localStorage.setItem('because-theme', next);
   });
+
+  // Bulk select mode
+  const selectBtn = document.getElementById('select-btn');
+  const bulkBar = document.getElementById('bulk-bar');
+  const bulkCount = document.getElementById('bulk-count');
+  const bulkSelectAll = document.getElementById('bulk-select-all');
+  const bulkDelete = document.getElementById('bulk-delete');
+  const bulkCancel = document.getElementById('bulk-cancel');
+  const listEl = document.getElementById('list');
+  let isSelectMode = false;
+
+  function getCheckedIds() {
+    return Array.from(listEl.querySelectorAll('.item-checkbox:checked'))
+      .map(cb => cb.closest('.item')?.dataset.id)
+      .filter(Boolean);
+  }
+
+  function updateBulkBar() {
+    const count = getCheckedIds().length;
+    bulkCount.textContent = count === 1 ? '1 selected' : `${count} selected`;
+    bulkDelete.disabled = count === 0;
+  }
+
+  function enterSelectMode() {
+    isSelectMode = true;
+    listEl.classList.add('is-select-mode');
+    selectBtn.classList.add('is-selecting');
+    selectBtn.textContent = 'Done';
+    bulkBar.removeAttribute('hidden');
+    updateBulkBar();
+  }
+
+  function exitSelectMode() {
+    isSelectMode = false;
+    listEl.classList.remove('is-select-mode');
+    selectBtn.classList.remove('is-selecting');
+    selectBtn.textContent = 'Select';
+    bulkBar.setAttribute('hidden', '');
+    listEl.querySelectorAll('.item-checkbox').forEach(cb => {
+      cb.checked = false;
+      cb.closest('.item')?.classList.remove('is-selected');
+    });
+  }
+
+  selectBtn?.addEventListener('click', () => {
+    if (isSelectMode) exitSelectMode();
+    else enterSelectMode();
+  });
+
+  bulkCancel?.addEventListener('click', exitSelectMode);
+
+  bulkSelectAll?.addEventListener('click', () => {
+    const checkboxes = listEl.querySelectorAll('.item-checkbox');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => {
+      cb.checked = !allChecked;
+      cb.closest('.item')?.classList.toggle('is-selected', !allChecked);
+    });
+    updateBulkBar();
+  });
+
+  bulkDelete?.addEventListener('click', async () => {
+    const ids = getCheckedIds();
+    if (ids.length === 0) return;
+    const confirmed = ids.length > 10
+      ? confirm(`Delete ${ids.length} items? This cannot be undone.`)
+      : true;
+    if (!confirmed) return;
+    const idSet = new Set(ids);
+    const removed = items.filter(i => idSet.has(i.id));
+    items.splice(0, items.length, ...items.filter(i => !idSet.has(i.id)));
+    try {
+      await saveItems(items);
+      showToast(`Deleted ${removed.length} items`, 'success');
+    } catch (e) {
+      items.splice(0, items.length, ...items, ...removed);
+      showToast('Failed to delete', 'error');
+    }
+    exitSelectMode();
+    showList();
+  });
+
+  document.addEventListener('bulk-selection-changed', updateBulkBar);
 
   // AI settings modal
   const aiSettingsBtn = document.getElementById('ai-settings-btn');

@@ -243,7 +243,8 @@ body.because-extension-loaded .extension-hint {
   border-color: var(--accent);
 }
 
-#chart-btn {
+#chart-btn,
+#select-btn {
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -254,12 +255,98 @@ body.because-extension-loaded .extension-hint {
   border-radius: var(--radius);
   color: var(--text-muted);
   cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
   transition: color 0.2s, border-color 0.2s;
 }
 
-#chart-btn:hover {
+#chart-btn:hover,
+#select-btn:hover {
   color: var(--accent);
   border-color: var(--accent);
+}
+
+#select-btn.is-selecting {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Bulk selection */
+.item.is-selected {
+  border-color: var(--accent);
+  background: rgba(212, 168, 83, 0.06);
+}
+
+.item-checkbox {
+  display: none;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+  margin-right: 0.25rem;
+}
+
+.is-select-mode .item-checkbox {
+  display: block;
+}
+
+.bulk-bar {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  z-index: 500;
+  white-space: nowrap;
+}
+
+.bulk-bar[hidden] {
+  display: none;
+}
+
+#bulk-count {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  min-width: 80px;
+}
+
+.bulk-bar-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bulk-bar-actions button {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.bulk-bar-actions button:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.bulk-delete-btn {
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
+}
+
+.bulk-delete-btn:hover {
+  background: rgba(224, 124, 124, 0.1) !important;
 }
 
 /* Chart overlay */

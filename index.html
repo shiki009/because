@@ -110,6 +110,7 @@
           autocomplete="off"
           aria-label="Search your saved items"
         >
+        <button id="select-btn" type="button" title="Select items" aria-label="Select items">Select</button>
         <button id="chart-btn" type="button" title="View topic chart" aria-label="View topic chart">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
             <circle cx="12" cy="12" r="9"/>
@@ -161,6 +162,15 @@
         </div>
       </div>
     </footer>
+  </div>
+
+  <div id="bulk-bar" class="bulk-bar" hidden>
+    <span id="bulk-count">0 selected</span>
+    <div class="bulk-bar-actions">
+      <button id="bulk-select-all" type="button">Select all</button>
+      <button id="bulk-delete" type="button" class="bulk-delete-btn">Delete selected</button>
+      <button id="bulk-cancel" type="button">Cancel</button>
+    </div>
   </div>
 
   <script src="theme.js"></script>
