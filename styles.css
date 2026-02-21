@@ -567,6 +567,24 @@ body.because-extension-loaded .extension-hint {
   border-color: var(--accent);
 }
 
+.item-reclassify {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1;
+}
+
+.item-reclassify:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .item-topic-loading {
   font-size: 0.65rem;
   padding: 0.2rem 0.45rem;

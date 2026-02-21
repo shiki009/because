@@ -74,7 +74,7 @@ function filterItems(items, query, topicFilter = null) {
   );
 }
 
-function renderItem(item, onDelete, onEdit, onTopicClick) {
+function renderItem(item, onDelete, onEdit, onTopicClick, onReclassify) {
   const li = document.createElement('li');
   li.className = 'item';
   li.dataset.id = item.id;
@@ -85,9 +85,11 @@ function renderItem(item, onDelete, onEdit, onTopicClick) {
     ? `<a href="${escapeHtml(item.content)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.content)}</a>`
     : escapeHtml(item.content);
 
+  const topics = item.topics?.length ? item.topics : ['Other'];
+  const isOther = topics.length === 1 && topics[0] === 'Other';
   const topicsHtml = item._classifying
     ? `<div class="item-topics"><span class="item-topic-loading">classifying…</span></div>`
-    : `<div class="item-topics">${(item.topics?.length ? item.topics : ['Other']).map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}</div>`;
+    : `<div class="item-topics">${topics.map(t => `<button type="button" class="item-topic" data-topic="${escapeHtml(t)}" title="Filter by ${escapeHtml(t)}">${escapeHtml(t)}</button>`).join('')}${isOther ? `<button type="button" class="item-reclassify" title="Re-classify with AI" aria-label="Re-classify">↻</button>` : ''}</div>`;
 
   li.innerHTML = `
     ${topicsHtml}
@@ -105,6 +107,8 @@ function renderItem(item, onDelete, onEdit, onTopicClick) {
     btn.addEventListener('click', () => onTopicClick?.(btn.dataset.topic));
   });
 
+  li.querySelector('.item-reclassify')?.addEventListener('click', () => onReclassify?.(item));
+
   li.querySelector('.copy').addEventListener('click', () => {
     const text = `${item.content}\nBecause ${item.because}`;
     navigator.clipboard?.writeText(text).then(() => {
@@ -120,7 +124,7 @@ function renderItem(item, onDelete, onEdit, onTopicClick) {
 
 const PAGE_SIZE = 15;
 
-function renderList(items, searchQuery, limit, onRefresh, topicFilter = null, onTopicClick = null) {
+function renderList(items, searchQuery, limit, onRefresh, topicFilter = null, onTopicClick = null, onReclassify = null) {
   const listEl = document.getElementById('list');
   const emptyEl = document.getElementById('empty-state');
   const loadMoreWrap = document.getElementById('load-more-wrap');
@@ -175,7 +179,7 @@ function renderList(items, searchQuery, limit, onRefresh, topicFilter = null, on
   const onDelete = (id) => deleteItem(id, items, onRefresh);
   const onEdit = (it) => editItem(it, items, onRefresh);
   toShow.forEach(item => {
-    listEl.appendChild(renderItem(item, onDelete, onEdit, onTopicClick));
+    listEl.appendChild(renderItem(item, onDelete, onEdit, onTopicClick, onReclassify));
   });
   if (limit != null && sorted.length > limit) {
     loadMoreWrap.hidden = false;
@@ -516,8 +520,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (topic) searchInput.value = '';
   }
 
+  async function reclassifyItem(item) {
+    if (item._classifying) return;
+    item._classifying = true;
+    showList();
+    try {
+      item.topics = await classifyItem(item.content, item.because);
+    } catch {
+      item.topics = ['Other'];
+    } finally {
+      delete item._classifying;
+      await saveItems(items);
+      showList();
+    }
+  }
+
   function showList() {
-    renderList(items, searchInput.value, visibleCount, showList, activeTopicFilter, onTopicClick);
+    renderList(items, searchInput.value, visibleCount, showList, activeTopicFilter, onTopicClick, reclassifyItem);
   }
 
   showList();
