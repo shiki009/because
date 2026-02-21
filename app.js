@@ -482,11 +482,38 @@ function importBookmarks(items, fileInput, onRefresh) {
       const html = e.target.result;
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
+
+      // Build a map of each <a> element → its nearest parent folder name
+      const folderMap = new Map();
+      const allDls = doc.querySelectorAll('dl');
+      allDls.forEach(dl => {
+        const h3 = dl.previousElementSibling;
+        const folderName = h3?.tagName === 'H3' ? h3.textContent?.trim() : null;
+        if (folderName) {
+          dl.querySelectorAll('a[href]').forEach(a => {
+            if (!folderMap.has(a)) folderMap.set(a, folderName);
+          });
+        }
+      });
+
       const links = Array.from(doc.querySelectorAll('a[href]'));
+      const ALLOWED_TOPICS = ['Learning', 'Ideas', 'Reference', 'Work', 'Inspiration', 'Personal', 'Other'];
 
       const bookmarks = links
-        .map(a => ({ url: a.href?.trim(), title: a.textContent?.trim() }))
-        .filter(b => /^https?:\/\//i.test(b.url));
+        .map(a => {
+          const url = a.getAttribute('href')?.trim();
+          const title = a.textContent?.trim();
+          const addDate = a.getAttribute('add_date');
+          const folder = folderMap.get(a) || null;
+          const createdAt = addDate && /^\d+$/.test(addDate)
+            ? new Date(parseInt(addDate) * 1000).toISOString()
+            : new Date().toISOString();
+          // Map folder name to a known topic if possible
+          const folderLower = folder?.toLowerCase() || '';
+          const topic = ALLOWED_TOPICS.find(t => folderLower.includes(t.toLowerCase())) || null;
+          return { url, title, createdAt, folder, topic };
+        })
+        .filter(b => b.url && /^https?:\/\//i.test(b.url));
 
       if (bookmarks.length === 0) {
         showToast('No bookmarks found in file', 'error');
@@ -508,10 +535,18 @@ function importBookmarks(items, fileInput, onRefresh) {
         return;
       }
 
-      const newItems = newBookmarks.map(b => createItem(
-        b.url,
-        b.title ? `Saved from browser: ${b.title}` : 'Imported from browser bookmarks'
-      ));
+      const newItems = newBookmarks.map(b => {
+        const because = b.title
+          ? `Saved from browser: ${b.title}`
+          : b.folder
+            ? `Saved from folder: ${b.folder}`
+            : 'Imported from browser bookmarks';
+        const item = createItem(b.url, because);
+        item.createdAt = b.createdAt;
+        if (b.topic) item.topics = [b.topic];
+        else if (b.folder) item.topics = [b.folder.slice(0, 30)];
+        return item;
+      });
 
       const merged = [...newItems, ...items];
       await saveItems(merged);
