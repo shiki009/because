@@ -647,7 +647,6 @@ body.because-extension-loaded .extension-hint {
 .item {
   position: relative;
   padding: 1.25rem;
-  padding-top: 2.25rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -687,13 +686,11 @@ body.because-extension-loaded .extension-hint {
 }
 
 .item-topics {
-  position: absolute;
-  top: 0.75rem;
-  right: 1rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   justify-content: flex-end;
+  margin-bottom: 0.5rem;
 }
 
 .item-topic {
